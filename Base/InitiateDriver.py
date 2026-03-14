@@ -35,7 +35,7 @@ class InitiateDriver:
         page.fill("//input[@type='password']","Kishor@12345")
         time.sleep(5)
         page.click("//span[text()='Next']")
-        time.sleep(30)
+        time.sleep(60)
         # page.click("//button[@type='submit']")
         page.wait_for_load_state("networkidle")
 
