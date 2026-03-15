@@ -21,6 +21,7 @@ class InitiateDriver:
 
         context = browser.new_context()
         page = context.new_page()
+        page.set_default_timeout(60000)
 
         # Login flow
         page.goto("https://onboarding.qa.trukker.com/",
@@ -29,13 +30,13 @@ class InitiateDriver:
         # page.fill("//input[@name='username']", "test1@trukker.com")
         # page.fill("//input[@name='password']", "trukker@123")
         page.click("//span[text()='Sign in with Google']")
-        time.sleep(5)
+        # time.sleep(5)
         page.fill("//input[@type='email']","punem.kishor@trukker.com")
-        time.sleep(5)
+        # time.sleep(5)
         page.click("//span[text()='Next']")
-        time.sleep(5)
+        # time.sleep(5)
         page.fill("//input[@type='password']","Kishor@12345")
-        time.sleep(5)
+        # time.sleep(5)
         page.click("//span[text()='Next']")
         # time.sleep(30)
         # page.click("//button[@type='submit']")
