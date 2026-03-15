@@ -1,14 +1,18 @@
+import os
 import openpyxl
 
 class CreateinquiryExecutionData:
     @staticmethod
     def getTestdata(CreateInquiryData):
-        book = openpyxl.load_workbook(
-            "C:\\Users\\kisho\\PycharmProjects\\FrameWork_Playwright\\ExcelSheet\\CreateInquiryData.xlsx")
+        # book = openpyxl.load_workbook(
+        #     "C:\\Users\\kisho\\PycharmProjects\\FrameWork_Playwright\\ExcelSheet\\CreateInquiryData.xlsx")
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        excel_path = os.path.join(BASE_DIR, "ExcelSheet", "CreateInquiryData.xlsx")
 
+        book = openpyxl.load_workbook(excel_path)
         if CreateInquiryData not in book.sheetnames:
             raise ValueError(
-                f"❌ Sheet '{CreateInquiryData}' not found. Available sheets: {book.sheetnames}"
+                f"Sheet '{CreateInquiryData}' not found. Available sheets: {book.sheetnames}"
             )
 
         sheet = book[CreateInquiryData]
