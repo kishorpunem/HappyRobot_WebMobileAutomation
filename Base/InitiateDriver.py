@@ -12,9 +12,10 @@ class InitiateDriver:
         e.g. "WebVideos", "OrderBooking", "WinnerDeclaration"
         """
         p = sync_playwright().start()
+        headless = os.getenv("RENDER", None) is not None
         browser = p.chromium.launch(
-            headless=False,
-            args=["--start-maximized", "--disable-dev-shm-usage"],
+            headless=headless,
+            args=["--no-sandbox","--start-maximized", "--disable-dev-shm-usage"],
             slow_mo=1000
         )
 
