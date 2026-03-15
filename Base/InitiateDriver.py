@@ -13,8 +13,8 @@ class InitiateDriver:
         """
         p = sync_playwright().start()
         browser = p.chromium.launch(
-            headless=False,
-            args=["--start-maximized", "--disable-dev-shm-usage"],
+            headless=True,
+            args=["--no-sandbox,--start-maximized", "--disable-dev-shm-usage"],
             slow_mo=1000
         )
 
