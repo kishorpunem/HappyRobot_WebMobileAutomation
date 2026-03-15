@@ -36,3 +36,4 @@ Pygments==2.19.2
 beautifulsoup4==4.14.0
 allure-pytest==2.15.3
 allure-python-commons==2.15.3
+gunicorn==23.0.0
