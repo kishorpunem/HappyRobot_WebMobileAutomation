@@ -44,14 +44,14 @@ def test_CreateInquiryUAECB(getdata):
     p, browser, context, page = InitiateDriver.TestLogin("WebVideos")
     CreateInquirys = InquiryCreationlocaters(page)
 
-    print(f"\n🚀 Running test for shipper: {getdata['shippername']}")
+    print(f"\n Running test for shipper: {getdata['shippername']}")
 
     # If you want an explicit pause here, use page.wait_for_timeout( <ms> )
     # e.g. page.wait_for_timeout(2000)  -> this will always run regardless of HUMANIZE
 
     # Use human_sleep only if you want optional jitter between calls
-    human_sleep(400, 400)
-
+    # human_sleep(600, 600)
+    time.sleep(60)
     # ========== FLOW STEPS ==========
     CreateInquirys.CreateInquirDownArrow()
     human_sleep(80, 120)
@@ -134,27 +134,27 @@ def test_CreateInquiryUAECB(getdata):
     screenshot_path = os.path.join(screenshot_dir, "CreateInquiry.png")
     try:
         page.screenshot(path=screenshot_path)
-        print(f"🖼 Screenshot saved: {screenshot_path}")
+        print(f" Screenshot saved: {screenshot_path}")
     except Exception as e:
-        print(f"⚠️ Screenshot failed: {e}")
+        print(f" Screenshot failed: {e}")
 
     # If Success_PopUp uses internal waits, they will run exactly as coded
     inquiry_success = None
     try:
         inquiry_success = CreateInquirys.Success_PopUp()
     except Exception as e:
-        print(f"⚠️ Could not read success popup: {e}")
+        print(f"Could not read success popup: {e}")
 
-    print(f"✅ Inquiry popup message: {inquiry_success}")
+    print(f"Inquiry popup message: {inquiry_success}")
 
     # Save inquiry number if provided by page object
     try:
         inquiry_number = CreateInquirys.Get_Inquiry_Number()
         save_inquiry_to_excel(inquiry_number)
-        print(f"📥 Inquiry number saved: {inquiry_number}")
+        print(f"Inquiry number saved: {inquiry_number}")
     except Exception as e:
         inquiry_number = None
-        print(f"⚠️ Failed to get/save inquiry number: {e}")
+        print(f"Failed to get/save inquiry number: {e}")
 
     # Keep your explicit wait here — it will be respected
     page.wait_for_timeout(30000)
@@ -210,12 +210,12 @@ def test_CreateInquiryUAECB(getdata):
         ]
 
         if not webm_files:
-            print("⚠️ No .webm video found after test run.")
+            print(" No .webm video found after test run.")
             return
 
         # 6️⃣ Select the latest .webm file (most recently created)
         latest_webm = max(webm_files, key=os.path.getctime)
-        print(f"ℹ️ Latest .webm file: {latest_webm}")
+        print(f" Latest .webm file: {latest_webm}")
 
         # 7️⃣ Convert .webm → .mp4 using ffmpeg with compression
         #    - libx264: good compression codec
@@ -249,9 +249,9 @@ def test_CreateInquiryUAECB(getdata):
             mp4_path,
         ]
 
-        print(f"🔄 Converting to compressed MP4: {mp4_path}")
+        print(f" Converting to compressed MP4: {mp4_path}")
         subprocess.run(cmd, check=True)
-        print(f"✅ MP4 video saved successfully: {mp4_path}")
+        print(f" MP4 video saved successfully: {mp4_path}")
 
         # 8️⃣ Clean up: delete ALL .webm and .mp4 in this folder EXCEPT the new mp4
         for f in os.listdir(video_dir):
@@ -265,11 +265,11 @@ def test_CreateInquiryUAECB(getdata):
             if f.lower().endswith(".webm") or f.lower().endswith(".mp4"):
                 try:
                     os.remove(file_path)
-                    print(f"🗑️ Deleted old video file: {file_path}")
+                    print(f" Deleted old video file: {file_path}")
                 except Exception as delete_err:
-                    print(f"⚠️ Unable to delete file: {file_path}, Error: {delete_err}")
+                    print(f" Unable to delete file: {file_path}, Error: {delete_err}")
 
     except subprocess.CalledProcessError as ffmpeg_err:
-        print(f"❌ ffmpeg conversion failed: {ffmpeg_err}")
+        print(f" ffmpeg conversion failed: {ffmpeg_err}")
     except Exception as e:
-        print(f"⚠️ Video processing failed: {e}")
+        print(f"Video processing failed: {e}")
