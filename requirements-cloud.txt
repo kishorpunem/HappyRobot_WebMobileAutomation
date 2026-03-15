@@ -1,5 +1,4 @@
-@"
-fastapi==0.134.0
+Set-Content -Path "requirements-cloud.txt" -Value "fastapi==0.134.0
 uvicorn==0.41.0
 starlette==0.52.1
 pydantic==2.12.5
@@ -36,5 +35,4 @@ python-json-logger==4.0.0
 Pygments==2.19.2
 beautifulsoup4==4.14.3
 allure-pytest==2.15.3
-allure-python-commons==2.15.3
-"@ | Out-File -FilePath "requirements-cloud.txt" -Encoding utf8
+allure-python-commons==2.15.3"
