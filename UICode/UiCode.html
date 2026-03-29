@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Automation Runner</title>
+</head>
+<body>
+
+<h2>Automation Test Runner</h2>
+
+<input type="text" id="testName" placeholder="Enter Test Name">
+
+<button onclick="runTest()">Run Test</button>
+
+<h3>Result</h3>
+<pre id="result"></pre>
+
+<script>
+
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+async function runTest() {
+
+    const testName = document.getElementById("testName").value;
+
+    const response = await fetch(
+        `${API_BASE_URL}/automation/run-test/${testName}`,
+        {
+            method: "POST"
+        }
+    );
+
+    const data = await response.json();
+
+    document.getElementById("result").textContent =
+        JSON.stringify(data, null, 2);
+}
+
+</script>
+
+</body>
+</html>

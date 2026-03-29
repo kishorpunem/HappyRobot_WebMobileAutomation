@@ -3,7 +3,7 @@ from api.schemas.automation_schema import run_test
 
 router = APIRouter(prefix="/automation", tags=["Automation"])
 
-@router.post("/run-test")
+@router.post("/run-test/CreateInquiryforGCC")
 def run_automation(test_name: str):
 
     result = run_test(test_name)

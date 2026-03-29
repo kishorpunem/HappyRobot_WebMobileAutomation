@@ -7,7 +7,17 @@ def run_test(test_name):
 
     start_time = time.time()
 
+    # automatically add .py if user forgets
+    if not test_name.endswith(".py"):
+        test_name += ".py"
+
     test_path = os.path.join("TestCases", test_name)
+
+    # check file exists
+    if not os.path.exists(test_path):
+        return {
+            "error": f"Test file not found: {test_path}"
+        }
 
     process = subprocess.run(
         ["python", "-m", "pytest", test_path, "-s", "-v"],
