@@ -11,10 +11,12 @@ def save_test_execution(data):
     VALUES (%s,%s,%s,%s,%s,%s)
     """
 
+    execution_time = float(data["execution_time"].replace("s", ""))
+
     cursor.execute(query, (
         data["test_name"],
         data["status"],
-        data["execution_time"],
+        execution_time,
         data["inquiry_no"],
         data["inquiry_movetype"],
         data["inquiry_creationdatetime"]
