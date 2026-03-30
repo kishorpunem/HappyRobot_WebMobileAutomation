@@ -22,7 +22,7 @@ class InitiateDriver:
         page = context.new_page()
 
         # Login flow
-        page.goto("https://onboarding.qa.trukker.com/",
+        page.goto("https://onboarding.stage.trukker.com/",
                   timeout=120000)
         # page.set_viewport_size({"width": 1920, "height": 1080})
         page.fill("//input[@name='username']", "Pythonautomation")

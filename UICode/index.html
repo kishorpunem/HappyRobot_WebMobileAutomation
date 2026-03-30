@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Automation Execution Dashboard</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial, sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+position:relative;
+overflow:hidden;
+}
+
+/* Background Image */
+body::before{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background-image:url("images/UiBackground.jpg");
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+filter:blur(4px);
+z-index:-2;
+}
+
+/* Dark Overlay */
+body::after{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.45);
+z-index:-1;
+}
+
+/* Watermark */
+.watermark{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:120px;
+color:rgba(255,255,255,0.05);
+font-weight:bold;
+pointer-events:none;
+letter-spacing:10px;
+}
+
+/* Container */
+.container{
+width:700px;
+background:rgba(255,255,255,0.9);
+backdrop-filter:blur(8px);
+border-radius:12px;
+padding:30px;
+box-shadow:0px 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Title */
+h2{
+text-align:center;
+margin-bottom:25px;
+}
+
+/* Input group */
+.input-group{
+display:flex;
+gap:10px;
+}
+
+/* Input */
+input{
+flex:1;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:15px;
+}
+
+/* Button */
+button{
+background:#007bff;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#0056b3;
+}
+
+button:disabled{
+background:gray;
+}
+
+/* CRAZY LOADER */
+
+.loader{
+display:none;
+text-align:center;
+margin-top:20px;
+}
+
+.loader img{
+width:80px;
+height:80px;
+}
+
+@keyframes spinBot{
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
+}
+
+/* Status */
+.status{
+text-align:center;
+margin-top:10px;
+font-weight:bold;
+font-size:16px;
+}
+
+.pass{
+color:green;
+}
+
+.fail{
+color:red;
+}
+
+/* Logs */
+.logs{
+background:black;
+color:#00ff00;
+padding:15px;
+margin-top:20px;
+height:250px;
+overflow:auto;
+border-radius:6px;
+font-size:13px;
+font-family:monospace;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="watermark">AUTOMATION</div>
+
+<div class="container">
+
+<h2>🚀 Automation Test Runner</h2>
+
+<div class="input-group">
+<input type="text" id="testName" placeholder="Enter test file (example: test_login.py)">
+<button id="runBtn" onclick="runTest()">Run Test</button>
+</div>
+
+<div class="loader" id="loader">
+    <img src="images/loading01.gif" alt="Loading">
+</div>
+
+<div class="status" id="status"></div>
+
+<div class="logs" id="logs">Execution logs will appear here...</div>
+
+</div>
+
+<script>
+
+const API_URL="http://127.0.0.1:8000/automation/run-test/CreateInquiryforGCC";
+
+/* Crazy Automation Messages */
+
+const crazyMessages=[
+"🤖 AI Bots Executing Tests...",
+"🚀 Launching Automation Rockets...",
+"⚡ Automation Engine Ignited...",
+"🧠 Smart Robots Running Scripts...",
+"🔥 Stress Testing The System...",
+"🛠 Automation Factory Working..."
+];
+
+async function runTest(){
+
+const testName=document.getElementById("testName").value;
+
+if(!testName){
+alert("Please enter test name");
+return;
+}
+
+/* Random crazy message */
+
+const randomMessage=crazyMessages[Math.floor(Math.random()*crazyMessages.length)];
+
+document.getElementById("loader").style.display="block";
+document.getElementById("runBtn").disabled=true;
+document.getElementById("status").innerHTML=randomMessage;
+document.getElementById("logs").textContent="Starting execution...\n";
+
+try{
+
+const response=await fetch(
+`${API_URL}?test_name=${testName}`,
+{
+method:"POST"
+});
+
+const data=await response.json();
+
+document.getElementById("loader").style.display="none";
+document.getElementById("runBtn").disabled=false;
+
+const result=data.result;
+
+if(result.status==="PASS"){
+document.getElementById("status").innerHTML="✅ TEST PASSED";
+document.getElementById("status").className="status pass";
+}
+else{
+document.getElementById("status").innerHTML="❌ TEST FAILED";
+document.getElementById("status").className="status fail";
+}
+
+document.getElementById("logs").textContent=result.stdout+"\n"+result.stderr;
+
+}catch(error){
+
+document.getElementById("loader").style.display="none";
+document.getElementById("runBtn").disabled=false;
+
+document.getElementById("status").innerHTML="⚠ API Connection Error";
+document.getElementById("status").className="status fail";
+
+document.getElementById("logs").textContent=error;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
