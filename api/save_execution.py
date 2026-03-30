@@ -1,4 +1,4 @@
-from database import get_connection
+from api.database import get_connection
 
 def save_test_execution(data):
 

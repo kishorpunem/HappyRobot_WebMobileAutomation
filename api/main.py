@@ -16,3 +16,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(automation_router)
+
+@app.get("/")
+def root():
+    return {"message": "HappyRobot Automation API is running"}

@@ -41,6 +41,7 @@ def getdata(request):
 @pytest.mark.dependency(name="create_inquiry", scope="session")
 def test_CreateInquiryUAECB(getdata):
     # Start browser + page
+    start_time = datetime.now()
     p, browser, context, page = InitiateDriver.TestLogin("WebVideos")
     CreateInquirys = InquiryCreationlocaters(page)
 
@@ -176,3 +177,13 @@ def test_CreateInquiryUAECB(getdata):
         p.stop()
     except Exception:
         pass
+    end_time = datetime.now()
+    execution_time = (end_time - start_time).total_seconds()
+
+    return {
+        "test_name": "UAE Inquiry_CrossBorder",
+        "status": "PASS",
+        "execution_time": execution_time,
+        "inquiry_no": inquiry_number,
+        "inquiry_movetype": "CrossBorder"
+    }
