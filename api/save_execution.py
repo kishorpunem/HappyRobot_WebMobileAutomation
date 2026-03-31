@@ -1,7 +1,7 @@
 from api.database import get_connection
 
-def save_test_execution(data):
 
+def save_test_execution(data):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -11,15 +11,20 @@ def save_test_execution(data):
     VALUES (%s,%s,%s,%s,%s,%s)
     """
 
-    execution_time = float(data["execution_time"].replace("s", ""))
+    execution_time_raw = data.get("execution_time", 0)
+
+    if isinstance(execution_time_raw, str):
+        execution_time = float(execution_time_raw.replace("s", ""))
+    else:
+        execution_time = float(execution_time_raw)
 
     cursor.execute(query, (
-        data["test_name"],
-        data["status"],
+        data.get("test_name"),
+        data.get("status"),
         execution_time,
-        data["inquiry_no"],
-        data["inquiry_movetype"],
-        data["inquiry_creationdatetime"]
+        data.get("inquiry_no"),
+        data.get("inquiry_movetype"),
+        data.get("inquiry_creationdatetime")
     ))
 
     conn.commit()

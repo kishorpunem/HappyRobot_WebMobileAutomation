@@ -206,22 +206,27 @@ class InquiryCreationlocaters:
         try:
             self.page.wait_for_selector(self.Success, timeout=15000)
             popup_text = self.page.locator(self.Success).inner_text().strip()
-            print(f"✅ Inquiry popup message: {popup_text}")
+            print(f"Inquiry popup message: {popup_text}")
             return popup_text
         except Exception as e:
-            print(f"❌ Failed to get success popup: {e}")
+            print(f"Failed to get success popup: {e}")
             return ""
 
     def Get_Inquiry_Number(self):
         try:
-            # ✅ Modify selector based on your UI HTML
-            inquiry_element = self.page.locator("//a[@class='inquiry-number']/span")
-            self.page.wait_for_timeout(2000)
-            inquiry_text = inquiry_element.inner_text().strip()
-            print(f"📦 Extracted Inquiry Number: {inquiry_text}")
-            return inquiry_text
-        except Exception:
-            print("⚠️ Inquiry number not found in popup.")
+            locator = self.page.locator("//a[@class='inquiry-number']/span")
+
+            locator.wait_for(state="visible", timeout=30000)
+
+            inquiry_number = locator.inner_text().strip()
+
+            print(f"Extracted Inquiry Number: {inquiry_number}")
+
+            return inquiry_number
+
+        except Exception as e:
+            print(f"Inquiry number not found: {e}")
+            self.page.screenshot(path="inquiry_error.png")
             return None
 
     @pytest.fixture(params=CreateinquiryExecutionData.getTestdata("CreateInquiryData"))

@@ -7,7 +7,7 @@ from datetime import datetime
 file_path = os.path.abspath(r"C:\Users\kisho\PycharmProjects\FrameWork_Playwright\ExcelSheet\CreateInquiry.xlsx")
 
 def save_inquiry_to_excel(inquiry_number, country="UAE"):
-    print(f"📁 Saving Inquiry to Excel: {file_path}")
+    print(f"Saving Inquiry to Excel: {file_path}")
 
     # Create file if not exists
     if not os.path.exists(file_path):
@@ -30,12 +30,12 @@ def save_inquiry_to_excel(inquiry_number, country="UAE"):
     sheet["D2"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     wb.save(file_path)
-    print(f"✅ Inquiry saved: {inquiry_number}")
+    print(f"Inquiry saved: {inquiry_number}")
 
 
 def read_inquiry_from_excel():
     if not os.path.exists(file_path):
-        print("❌ Excel file missing!")
+        print("Excel file missing!")
         return None
 
     wb = openpyxl.load_workbook(file_path)

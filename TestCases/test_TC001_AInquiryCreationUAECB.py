@@ -11,6 +11,7 @@ from Base.InitiateDriver import InitiateDriver
 from Pages.InquiryCreation import InquiryCreationlocaters
 from DataDrivenFromExcelSheet.DataDrivenForWeB import CreateinquiryExecutionData
 from DataDrivenFromExcelSheet.InqNumber_Store import save_inquiry_to_excel
+from api.save_execution import save_test_execution
 
 # ---------------- CONFIG ----------------
 # Set to True to add human-like random delays between steps.
@@ -129,61 +130,79 @@ def test_CreateInquiryUAECB(getdata):
     # <-- your explicit wait below will always wait exactly 12000 ms (12s) as written -->
     page.wait_for_timeout(12000)
 
-    # Screenshot after submission (your explicit call)
+    # Screenshot after submission
     screenshot_dir = os.path.join(os.path.dirname(__file__), "..", "screenshot")
     os.makedirs(screenshot_dir, exist_ok=True)
     screenshot_path = os.path.join(screenshot_dir, "CreateInquiry.png")
+
     try:
-        page.screenshot(path=screenshot_path)
-        print(f" Screenshot saved: {screenshot_path}")
+        page.screenshot(path=screenshot_path, timeout=60000, animations="disabled")
+        print(f"Screenshot saved: {screenshot_path}")
     except Exception as e:
-        print(f" Screenshot failed: {e}")
+        print(f"Screenshot failed: {e}")
 
-    # If Success_PopUp uses internal waits, they will run exactly as coded
-    inquiry_success = None
-    try:
-        inquiry_success = CreateInquirys.Success_PopUp()
-    except Exception as e:
-        print(f"Could not read success popup: {e}")
+    # ---------------- Capture Inquiry Number ----------------
+    inquiry_number = None
 
-    print(f"Inquiry popup message: {inquiry_success}")
-
-    # Save inquiry number if provided by page object
+    # Step 1: Extract inquiry number
     try:
         inquiry_number = CreateInquirys.Get_Inquiry_Number()
-        save_inquiry_to_excel(inquiry_number)
-        print(f"Inquiry number saved: {inquiry_number}")
+        print("Extracted Inquiry Number:", inquiry_number)
     except Exception as e:
-        inquiry_number = None
-        print(f"Failed to get/save inquiry number: {e}")
+        print("Failed to extract inquiry number:", e)
 
-    # Keep your explicit wait here — it will be respected
+    # Step 2: Save inquiry number to Excel
+    try:
+        if inquiry_number:
+            save_inquiry_to_excel(inquiry_number)
+            print("Inquiry number saved to Excel:", inquiry_number)
+        else:
+            print("No inquiry number captured.")
+    except Exception as e:
+        print("Failed to save inquiry number to Excel:", e)
+
+    # Explicit wait
     page.wait_for_timeout(30000)
 
-    # Close everything
+    # ---------------- Close Browser ----------------
     try:
         page.close()
     except Exception:
         pass
+
     try:
         context.close()
     except Exception:
         pass
+
     try:
         browser.close()
     except Exception:
         pass
+
     try:
         p.stop()
     except Exception:
         pass
+
+    # ---------------- Execution Data ----------------
     end_time = datetime.now()
     execution_time = (end_time - start_time).total_seconds()
 
-    return {
+    inquirycreationdatetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    execution_data = {
         "test_name": "UAE Inquiry_CrossBorder",
         "status": "PASS",
         "execution_time": execution_time,
         "inquiry_no": inquiry_number,
-        "inquiry_movetype": "CrossBorder"
+        "inquiry_movetype": "CrossBorder",
+        "inquiry_creationdatetime": inquirycreationdatetime
     }
+
+    print("Execution Data:", execution_data)
+
+    save_test_execution(execution_data)
+
+    # Test assertion
+    assert execution_data["status"] == "PASS"
