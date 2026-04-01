@@ -1,51 +1,123 @@
-from fastapi import APIRouter
-from api.schemas.automation_schema import run_test
-from api.save_execution import save_test_execution
-import re
+import os
+import subprocess
+import time
+from fastapi import APIRouter, WebSocket
 
-router = APIRouter(prefix="/automation", tags=["Automation"])
+router = APIRouter()
 
-@router.post("/run-test/CreateInquiryforGCC")
-def run_automation(test_name: str):
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+TEST_FOLDER = os.path.join(BASE_DIR, "TestCases")
+# TEST_FOLDER = os.path.join(os.getcwd(), "TestCases")
 
-    result = run_test(test_name)
+execution_history = []
 
-    print("RESULT FROM TEST:", result)
+connected_clients = []
 
-    stdout = result.get("stdout", "")
+# -----------------------------
+# GET TEST CASES
+# -----------------------------
+@router.get("/automation/get-tests")
+def get_tests():
 
-    # Extract values from stdout using regex
-    inquiry_no = None
-    inquiry_movetype = None
-    inquiry_creationdatetime = None
+    tests = []
 
-    inquiry_match = re.search(r"inquiry_no':\s*'([^']+)'", stdout)
-    movetype_match = re.search(r"inquiry_movetype':\s*'([^']+)'", stdout)
-    datetime_match = re.search(r"inquiry_creationdatetime':\s*'([^']+)'", stdout)
+    for file in os.listdir(TEST_FOLDER):
 
-    if inquiry_match:
-        inquiry_no = inquiry_match.group(1)
+        if file.startswith("test_") and file.endswith(".py"):
 
-    if movetype_match:
-        inquiry_movetype = movetype_match.group(1)
+            tests.append({
+                "name": file,
+                "status": "Not Run",
+                "duration": "-",
+                "last_run": "-"
+            })
 
-    if datetime_match:
-        inquiry_creationdatetime = datetime_match.group(1)
+    return {"tests": tests}
 
-    execution_data = {
-        "test_name": result.get("test_name"),
-        "status": result.get("status"),
-        "execution_time": result.get("execution_time"),
-        "inquiry_no": inquiry_no,
-        "inquiry_movetype": inquiry_movetype,
-        "inquiry_creationdatetime": inquiry_creationdatetime
-    }
 
-    print("DATA SENT TO DB:", execution_data)
+# -----------------------------
+# RUN SINGLE TEST
+# -----------------------------
+@router.post("/automation/run-test/{name}")
+def run_test(name: str):
 
-    save_test_execution(execution_data)
+    start = time.time()
+
+    result = subprocess.run(
+        ["pytest", f"{TEST_FOLDER}/{name}"],
+        capture_output=True,
+        text=True
+    )
+
+    duration = round(time.time() - start, 2)
+
+    status = "PASS" if result.returncode == 0 else "FAIL"
+
+    execution_history.append({
+        "test": name,
+        "status": status,
+        "duration": duration,
+        "time": time.strftime("%H:%M:%S")
+    })
 
     return {
-        "message": "Automation executed",
-        "result": result
+        "result": {
+            "status": status,
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        }
     }
+
+
+# -----------------------------
+# RUN ALL TESTS
+# -----------------------------
+@router.post("/automation/run-all-tests")
+def run_all_tests():
+
+    result = subprocess.run(
+        ["pytest", TEST_FOLDER],
+        capture_output=True,
+        text=True
+    )
+
+    return {"stdout": result.stdout}
+
+
+# -----------------------------
+# EXECUTION HISTORY
+# -----------------------------
+@router.get("/automation/history")
+def history():
+
+    return {"history": execution_history}
+
+
+# -----------------------------
+# SELENIUM GRID STATUS
+# -----------------------------
+@router.get("/automation/grid-status")
+def grid_status():
+
+    return {
+        "nodes": [
+            {"id": 1, "status": "Idle"},
+            {"id": 2, "status": "Running"},
+            {"id": 3, "status": "Idle"},
+            {"id": 4, "status": "Idle"}
+        ]
+    }
+
+
+# -----------------------------
+# REAL TIME LOG STREAM
+# -----------------------------
+@router.websocket("/automation/log-stream")
+async def log_stream(websocket: WebSocket):
+
+    await websocket.accept()
+
+    connected_clients.append(websocket)
+
+    while True:
+        await websocket.receive_text()

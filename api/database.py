@@ -5,7 +5,7 @@ def get_connection():
         host="ep-young-silence-aklb1zze-pooler.c-3.us-west-2.aws.neon.tech",
         database="neondb",
         user="neondb_owner",
-        password="npg_5UrNQI8inVev",
+        password="npg_rkGqWBMT9I0P",
         port="5432",
         sslmode="require"
     )

@@ -2,157 +2,89 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Automation Execution Dashboard</title>
+<title>Automation Jenkins Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-position:relative;
-overflow:hidden;
-}
-
-/* Background Image */
-body::before{
-content:"";
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background-image:url("images/UiBackground.jpg");
-background-size:cover;
-background-position:center;
-background-repeat:no-repeat;
-filter:blur(4px);
-z-index:-2;
-}
-
-/* Dark Overlay */
-body::after{
-content:"";
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.45);
-z-index:-1;
-}
-
-/* Watermark */
-.watermark{
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:120px;
-color:rgba(255,255,255,0.05);
-font-weight:bold;
-pointer-events:none;
-letter-spacing:10px;
-}
-
-/* Container */
-.container{
-width:700px;
-background:rgba(255,255,255,0.9);
-backdrop-filter:blur(8px);
-border-radius:12px;
-padding:30px;
-box-shadow:0px 10px 30px rgba(0,0,0,0.3);
-}
-
-/* Title */
-h2{
-text-align:center;
-margin-bottom:25px;
-}
-
-/* Input group */
-.input-group{
-display:flex;
-gap:10px;
-}
-
-/* Input */
-input{
-flex:1;
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:15px;
-}
-
-/* Button */
-button{
-background:#007bff;
+font-family:Arial;
+background:#0f172a;
 color:white;
+}
+
+.header{
+background:#020617;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.run-all{
+background:#22c55e;
 border:none;
-padding:10px 18px;
+padding:10px 20px;
 border-radius:6px;
+color:white;
+font-weight:bold;
 cursor:pointer;
-font-weight:bold;
 }
 
-button:hover{
-background:#0056b3;
+.dashboard{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+padding:20px;
 }
 
-button:disabled{
-background:gray;
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
 }
 
-/* CRAZY LOADER */
-
-.loader{
-display:none;
-text-align:center;
-margin-top:20px;
+table{
+width:100%;
+border-collapse:collapse;
 }
 
-.loader img{
-width:80px;
-height:80px;
+th,td{
+padding:10px;
+border-bottom:1px solid #334155;
 }
 
-@keyframes spinBot{
-0%{transform:rotate(0deg)}
-100%{transform:rotate(360deg)}
+.pass{color:#22c55e;}
+.fail{color:#ef4444;}
+
+button.run{
+background:#3b82f6;
+border:none;
+padding:6px 12px;
+border-radius:5px;
+color:white;
+cursor:pointer;
 }
 
-/* Status */
-.status{
-text-align:center;
-margin-top:10px;
-font-weight:bold;
-font-size:16px;
-}
-
-.pass{
-color:green;
-}
-
-.fail{
-color:red;
-}
-
-/* Logs */
 .logs{
 background:black;
 color:#00ff00;
 padding:15px;
-margin-top:20px;
+height:200px;
+overflow:auto;
+font-family:monospace;
+}
+
+.history{
 height:250px;
 overflow:auto;
-border-radius:6px;
-font-size:13px;
-font-family:monospace;
+}
+
+.history-item{
+padding:8px;
+border-bottom:1px solid #334155;
 }
 
 </style>
@@ -160,99 +92,180 @@ font-family:monospace;
 
 <body>
 
-<div class="watermark">AUTOMATION</div>
+<div class="header">
 
-<div class="container">
+<h1>🚀 Automation Jenkins Dashboard</h1>
 
-<h2>🚀 Automation Test Runner</h2>
+<button class="run-all" onclick="runAllTests()">Run All Tests</button>
 
-<div class="input-group">
-<input type="text" id="testName" placeholder="Enter test file (example: test_login.py)">
-<button id="runBtn" onclick="runTest()">Run Test</button>
 </div>
 
-<div class="loader" id="loader">
-    <img src="images/loading01.gif" alt="Loading">
+<div class="dashboard">
+
+<div class="card">
+
+<h3>Test Cases</h3>
+
+<table id="testTable">
+
+<thead>
+<tr>
+<th>Test</th>
+<th>Status</th>
+<th>Duration</th>
+<th>Last Run</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
 </div>
 
-<div class="status" id="status"></div>
+<div class="card">
 
-<div class="logs" id="logs">Execution logs will appear here...</div>
+<h3>PASS / FAIL Graph</h3>
+
+<canvas id="resultChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>Execution History</h3>
+
+<div id="history" class="history"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Logs</h3>
+
+<div id="logs" class="logs">Logs will appear here...</div>
+
+</div>
 
 </div>
 
 <script>
 
-const API_URL="http://127.0.0.1:8000/automation/run-test/CreateInquiryforGCC";
+const API="http://127.0.0.1:8000";
 
-/* Crazy Automation Messages */
+let chart;
 
-const crazyMessages=[
-"🤖 AI Bots Executing Tests...",
-"🚀 Launching Automation Rockets...",
-"⚡ Automation Engine Ignited...",
-"🧠 Smart Robots Running Scripts...",
-"🔥 Stress Testing The System...",
-"🛠 Automation Factory Working..."
-];
+function createChart(pass,fail){
 
-async function runTest(){
+const ctx=document.getElementById("resultChart");
 
-const testName=document.getElementById("testName").value;
+if(chart) chart.destroy();
 
-if(!testName){
-alert("Please enter test name");
-return;
+chart=new Chart(ctx,{
+type:'doughnut',
+data:{
+labels:['PASS','FAIL'],
+datasets:[{
+data:[pass,fail],
+backgroundColor:['#22c55e','#ef4444']
+}]
+}
+});
+
 }
 
-/* Random crazy message */
+async function loadTests(){
 
-const randomMessage=crazyMessages[Math.floor(Math.random()*crazyMessages.length)];
-
-document.getElementById("loader").style.display="block";
-document.getElementById("runBtn").disabled=true;
-document.getElementById("status").innerHTML=randomMessage;
-document.getElementById("logs").textContent="Starting execution...\n";
-
-try{
-
-const response=await fetch(
-`${API_URL}?test_name=${testName}`,
-{
-method:"POST"
-});
+const response=await fetch(API+"/automation/get-tests");
 
 const data=await response.json();
 
-document.getElementById("loader").style.display="none";
-document.getElementById("runBtn").disabled=false;
+const table=document.querySelector("#testTable tbody");
 
-const result=data.result;
+table.innerHTML="";
 
-if(result.status==="PASS"){
-document.getElementById("status").innerHTML="✅ TEST PASSED";
-document.getElementById("status").className="status pass";
+let pass=0;
+let fail=0;
+
+data.tests.forEach(test=>{
+
+if(test.status==="PASS") pass++;
+if(test.status==="FAIL") fail++;
+
+table.innerHTML+=`
+<tr>
+<td>${test.name}</td>
+<td class="${test.status==='PASS'?'pass':'fail'}">${test.status}</td>
+<td>${test.duration}</td>
+<td>${test.last_run}</td>
+<td>
+<button class="run" onclick="runTest('${test.name}')">Run</button>
+</td>
+</tr>
+`;
+
+});
+
+createChart(pass,fail);
+
 }
-else{
-document.getElementById("status").innerHTML="❌ TEST FAILED";
-document.getElementById("status").className="status fail";
-}
 
-document.getElementById("logs").textContent=result.stdout+"\n"+result.stderr;
+async function runTest(name){
 
-}catch(error){
+document.getElementById("logs").innerHTML="Running "+name+"...";
 
-document.getElementById("loader").style.display="none";
-document.getElementById("runBtn").disabled=false;
+const response=await fetch(API+"/automation/run-test/"+name,{method:"POST"});
 
-document.getElementById("status").innerHTML="⚠ API Connection Error";
-document.getElementById("status").className="status fail";
+const data=await response.json();
 
-document.getElementById("logs").textContent=error;
+document.getElementById("logs").innerText=
+data.result.stdout+"\n"+data.result.stderr;
+
+loadTests();
+loadHistory();
 
 }
 
+async function runAllTests(){
+
+document.getElementById("logs").innerHTML="Running all tests...";
+
+const response=await fetch(API+"/automation/run-all-tests",{method:"POST"});
+
+const data=await response.json();
+
+document.getElementById("logs").innerText=data.stdout;
+
+loadTests();
+loadHistory();
+
 }
+
+async function loadHistory(){
+
+const response=await fetch(API+"/automation/history");
+
+const data=await response.json();
+
+const history=document.getElementById("history");
+
+history.innerHTML="";
+
+data.history.forEach(item=>{
+
+history.innerHTML+=`
+<div class="history-item">
+<b>${item.test}</b> - ${item.status} - ${item.time}
+</div>
+`;
+
+});
+
+}
+
+loadTests();
+loadHistory();
 
 </script>
 
