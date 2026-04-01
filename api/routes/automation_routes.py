@@ -13,6 +13,8 @@ execution_history = []
 
 connected_clients = []
 
+job_status = {"run": False}
+
 # -----------------------------
 # GET TEST CASES
 # -----------------------------
@@ -121,3 +123,28 @@ async def log_stream(websocket: WebSocket):
 
     while True:
         await websocket.receive_text()
+
+# -----------------------------
+# RUNNER JOB CHECK
+# -----------------------------
+@router.get("/job")
+def check_job():
+    return job_status
+
+
+# -----------------------------
+# TRIGGER TESTS FROM DASHBOARD
+# -----------------------------
+@router.post("/run-tests")
+def trigger_tests():
+    job_status["run"] = True
+    return {"message": "Automation execution triggered"}
+
+
+# -----------------------------
+# JOB COMPLETE (RESET)
+# -----------------------------
+@router.post("/job-complete")
+def job_complete():
+    job_status["run"] = False
+    return {"message": "Job completed"}
