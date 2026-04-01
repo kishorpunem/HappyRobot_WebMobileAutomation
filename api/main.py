@@ -24,9 +24,6 @@ app.include_router(health_router)
 app.include_router(automation_router)
 
 # Dashboard UI
-@app.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request}
-    )
+@app.get("/")
+def dashboard():
+    return FileResponse("UICode/index.html")
