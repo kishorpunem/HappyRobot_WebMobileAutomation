@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Automation Jenkins Dashboard</title>
+<title>Automation Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -11,59 +11,110 @@
 body{
 margin:0;
 font-family:Arial;
-background:#0f172a;
 color:white;
+background:
+linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+url("background.jpg");
+background-size:cover;
+background-position:center;
+}
+
+.card{
+background:rgba(30,41,59,0.9);
+border-radius:8px;
 }
 
 .header{
 background:#020617;
-padding:20px;
+padding:12px 20px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
+.header h1{
+font-size:20px;
+margin:0;
+}
+
 .run-all{
 background:#22c55e;
 border:none;
-padding:10px 20px;
-border-radius:6px;
+padding:6px 14px;
+border-radius:5px;
 color:white;
+font-size:13px;
 font-weight:bold;
 cursor:pointer;
+}
+
+.stats{
+display:flex;
+gap:10px;
+padding:10px 20px;
+}
+
+.stat-box{
+flex:1;
+background:#1e293b;
+padding:10px;
+border-radius:6px;
+text-align:center;
+}
+
+.stat-number{
+font-size:18px;
+font-weight:bold;
+margin-top:5px;
 }
 
 .dashboard{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:20px;
-padding:20px;
+gap:10px;
+padding:10px;
+align-items:start;
 }
 
 .card{
 background:#1e293b;
-padding:20px;
-border-radius:10px;
+padding:10px;
+border-radius:6px;
+min-height:auto;
 }
+
+.card h3{
+font-size:14px;
+margin-bottom:8px;
+}
+
 
 table{
 width:100%;
 border-collapse:collapse;
+font-size:13px;
+}
+
+th{
+font-size:12px;
+color:#cbd5f5;
 }
 
 th,td{
-padding:10px;
+padding:5px;
 border-bottom:1px solid #334155;
 }
 
 .pass{color:#22c55e;}
 .fail{color:#ef4444;}
+.running{color:#f59e0b;}
 
 button.run{
 background:#3b82f6;
 border:none;
-padding:6px 12px;
-border-radius:5px;
+padding:4px 10px;
+border-radius:4px;
+font-size:12px;
 color:white;
 cursor:pointer;
 }
@@ -71,20 +122,47 @@ cursor:pointer;
 .logs{
 background:black;
 color:#00ff00;
-padding:15px;
-height:200px;
+padding:10px;
+height:150px;
 overflow:auto;
 font-family:monospace;
+font-size:12px;
 }
 
 .history{
-height:250px;
+height:120px;
 overflow:auto;
+font-size:12px;
 }
 
 .history-item{
-padding:8px;
+padding:5px;
 border-bottom:1px solid #334155;
+}
+
+.progress{
+height:10px;
+background:#334155;
+border-radius:6px;
+overflow:hidden;
+margin-top:8px;
+}
+
+.progress-bar{
+height:100%;
+width:0%;
+background:#22c55e;
+}
+
+.chart-box{
+width:180px;
+margin:auto;
+}
+
+#resultChart{
+max-height:160px;
+max-width:160px;
+margin:auto;
 }
 
 </style>
@@ -93,14 +171,39 @@ border-bottom:1px solid #334155;
 <body>
 
 <div class="header">
-
-<h1>🚀 Automation Jenkins Dashboard</h1>
-
+<h1>🚀 Automation Dashboard</h1>
 <button class="run-all" onclick="runAllTests()">Run All Tests</button>
+</div>
+
+<!-- STATS -->
+
+<div class="stats">
+
+<div class="stat-box">
+Total Tests
+<div id="totalTests" class="stat-number">0</div>
+</div>
+
+<div class="stat-box">
+PASS
+<div id="passCount" class="stat-number pass">0</div>
+</div>
+
+<div class="stat-box">
+FAIL
+<div id="failCount" class="stat-number fail">0</div>
+</div>
+
+<div class="stat-box">
+Running
+<div id="runningCount" class="stat-number running">0</div>
+</div>
 
 </div>
 
 <div class="dashboard">
+
+<!-- TEST TABLE -->
 
 <div class="card">
 
@@ -124,13 +227,25 @@ border-bottom:1px solid #334155;
 
 </div>
 
+<!-- GRAPH -->
+
 <div class="card">
 
 <h3>PASS / FAIL Graph</h3>
 
+<div class="chart-box">
 <canvas id="resultChart"></canvas>
+</div>
+
+<h3 style="margin-top:20px;">Execution Progress</h3>
+
+<div class="progress">
+<div id="progressBar" class="progress-bar"></div>
+</div>
 
 </div>
+
+<!-- HISTORY -->
 
 <div class="card">
 
@@ -140,11 +255,13 @@ border-bottom:1px solid #334155;
 
 </div>
 
+<!-- LOGS -->
+
 <div class="card">
 
-<h3>Logs</h3>
+<h3>Live Logs</h3>
 
-<div id="logs" class="logs">Logs will appear here...</div>
+<div id="logs" class="logs">Waiting for execution...</div>
 
 </div>
 
@@ -196,7 +313,7 @@ if(test.status==="FAIL") fail++;
 table.innerHTML+=`
 <tr>
 <td>${test.name}</td>
-<td class="${test.status==='PASS'?'pass':'fail'}">${test.status}</td>
+<td class="${test.status==='PASS'?'pass':test.status==='FAIL'?'fail':'running'}">${test.status}</td>
 <td>${test.duration}</td>
 <td>${test.last_run}</td>
 <td>
@@ -206,6 +323,10 @@ table.innerHTML+=`
 `;
 
 });
+
+document.getElementById("totalTests").innerText=data.tests.length;
+document.getElementById("passCount").innerText=pass;
+document.getElementById("failCount").innerText=fail;
 
 createChart(pass,fail);
 
@@ -219,8 +340,7 @@ const response=await fetch(API+"/automation/run-test/"+name,{method:"POST"});
 
 const data=await response.json();
 
-document.getElementById("logs").innerText=
-data.result.stdout+"\n"+data.result.stderr;
+document.getElementById("logs").innerText=data.result.stdout;
 
 loadTests();
 loadHistory();
